@@ -1,12 +1,15 @@
 package com.medschedule.api_agendamento.controller;
 
 import com.medschedule.api_agendamento.domain.repository.PacienteRepository;
+import com.medschedule.api_agendamento.model.Paciente;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/pacientes")

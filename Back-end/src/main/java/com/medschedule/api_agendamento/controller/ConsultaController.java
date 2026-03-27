@@ -1,5 +1,8 @@
 package com.medschedule.api_agendamento.controller;
 
+import com.medschedule.api_agendamento.model.Consulta;
+import com.medschedule.api_agendamento.repository.AgendaRepository;
+import com.medschedule.api_agendamento.repository.ConsultaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
