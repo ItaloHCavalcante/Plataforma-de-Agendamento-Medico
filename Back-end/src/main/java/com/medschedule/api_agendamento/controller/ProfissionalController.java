@@ -1,6 +1,5 @@
 package com.medschedule.api_agendamento.controller;
 
-
 import com.medschedule.api_agendamento.model.Profissional;
 import com.medschedule.api_agendamento.repository.ProfissionalRepository;
 import jakarta.transaction.Transactional;
@@ -21,7 +20,8 @@ public class ProfissionalController {
 
     @PostMapping
     @Transactional
-    public ReponseEntity<Profissional> cadastrar(@RequestBody @Valid Profissional profissional) {
+    // Corrigido: ResponseEntity (com 's')
+    public ResponseEntity<Profissional> cadastrar(@RequestBody @Valid Profissional profissional) {
         var salvo = repository.save(profissional);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
@@ -31,8 +31,7 @@ public class ProfissionalController {
         if (especialidade != null) {
             return ResponseEntity.ok(repository.findByEspecialidade(especialidade));
         }
-        return ResponseEntity.ok(repository.FindAll());
+        // Corrigido: findAll (com 'f' minúsculo)
+        return ResponseEntity.ok(repository.findAll());
     }
-
-
 }

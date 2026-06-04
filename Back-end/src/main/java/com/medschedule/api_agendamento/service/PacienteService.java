@@ -1,7 +1,7 @@
-package com.medschedule.api.domain.service;
+package com.medschedule.api_agendamento.service;
 
-import com.medschedule.api.domain.model.Paciente;
-import com.medschedule.api.domain.repository.PacienteRepository;
+import com.medschedule.api_agendamento.model.Paciente;
+import com.medschedule.api_agendamento.repository.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
