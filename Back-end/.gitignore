@@ -1,0 +1,23 @@
+# Build output
+/target/
+!/target/classes/
+
+# Log files
+*.log
+*.log.*
+
+# IDE files
+.idea/
+*.iml
+*.iws
+.vscode/
+
+# Environment files
+.env
+
+# Local configuration - IMPORTANT
+application-local.properties
+
+# Operating System files
+.DS_Store
+Thumbs.db
