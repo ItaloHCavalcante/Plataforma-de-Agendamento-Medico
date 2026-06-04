@@ -19,6 +19,10 @@ public class Consulta {
     @JoinColumn(name = "profissional_id", nullable = false)
     private Profissional profissional;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "agenda_id", nullable = false)
+    private Agenda agenda;
+
     @Column(nullable = false)
     private LocalDateTime dataHora;
 
@@ -57,6 +61,10 @@ public class Consulta {
         return status;
     }
 
+    public Agenda getAgenda() {
+        return agenda;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -75,5 +83,9 @@ public class Consulta {
 
     public void setStatus(StatusConsulta status) {
         this.status = status;
+    }
+
+    public void setAgenda(Agenda agenda) {
+        this.agenda = agenda;
     }
 }

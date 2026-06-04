@@ -1,9 +1,12 @@
 package com.medschedule.api_agendamento.repository;
 
-import com.medschedule.api_agendamento.domain.model.Consulta; // Ajustado aqui
+import com.medschedule.api_agendamento.model.Consulta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
+    List<Consulta> findByPacienteId(Long pacienteId);
 }

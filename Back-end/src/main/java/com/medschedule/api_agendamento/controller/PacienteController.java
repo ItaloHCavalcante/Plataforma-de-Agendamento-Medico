@@ -1,6 +1,6 @@
 package com.medschedule.api_agendamento.controller;
 
-import com.medschedule.api_agendamento.domain.repository.PacienteRepository;
+import com.medschedule.api_agendamento.repository.PacienteRepository;
 import com.medschedule.api_agendamento.model.Paciente;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
