@@ -9,7 +9,7 @@ public class Notificacao {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long id;S
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "consulta_id", nullable = false)
