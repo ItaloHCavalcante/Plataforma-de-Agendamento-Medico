@@ -20,18 +20,16 @@ public class ProfissionalController {
 
     @PostMapping
     @Transactional
-    // Corrigido: ResponseEntity (com 's')
     public ResponseEntity<Profissional> cadastrar(@RequestBody @Valid Profissional profissional) {
         var salvo = repository.save(profissional);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
     }
 
     @GetMapping
-    public ResponseEntity<List<Profissional>> listarPorEspecialidade(@RequestParam(required = false) Especialidade especialidade ){
-        if (especialidade != null) {
-            return ResponseEntity.ok(repository.findByEspecialidade(especialidade));
+    public ResponseEntity<List<Profissional>> listarPorEspecialidade(@RequestParam(required = false) String especialidade){
+        if (especialidade != null && !especialidade.trim().isEmpty()) {
+            return ResponseEntity.ok(repository.findByEspecialidadeNome(especialidade));
         }
-        // Corrigido: findAll (com 'f' minúsculo)
         return ResponseEntity.ok(repository.findAll());
     }
 }

@@ -1,10 +1,19 @@
 package com.medschedule.api_agendamento.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "consulta")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Consulta {
 
     @Id
@@ -30,62 +39,14 @@ public class Consulta {
     @Column(nullable = false)
     private StatusConsulta status;
 
-    public Consulta() {
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TipoConsulta tipoConsulta;
 
-    public Consulta(Long id, Paciente paciente, Profissional profissional, LocalDateTime dataHora, StatusConsulta status) {
-        this.id = id;
-        this.paciente = paciente;
-        this.profissional = profissional;
-        this.dataHora = dataHora;
-        this.status = status;
-    }
+    @Column(length = 500)
+    private String motivo;
 
-    public Long getId() {
-        return id;
-    }
-
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    public Profissional getProfissional() {
-        return profissional;
-    }
-
-    public LocalDateTime getDataHora() {
-        return dataHora;
-    }
-
-    public StatusConsulta getStatus() {
-        return status;
-    }
-
-    public Agenda getAgenda() {
-        return agenda;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setPaciente(Paciente paciente) {
-        this.paciente = paciente;
-    }
-
-    public void setProfissional(Profissional profissional) {
-        this.profissional = profissional;
-    }
-
-    public void setDataHora(LocalDateTime dataHora) {
-        this.dataHora = dataHora;
-    }
-
-    public void setStatus(StatusConsulta status) {
-        this.status = status;
-    }
-
-    public void setAgenda(Agenda agenda) {
-        this.agenda = agenda;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FormaPagamento formaPagamento;
 }

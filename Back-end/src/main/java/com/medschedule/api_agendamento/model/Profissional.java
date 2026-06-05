@@ -1,9 +1,20 @@
 package com.medschedule.api_agendamento.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "profissional")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Profissional {
 
     @Id
@@ -16,60 +27,28 @@ public class Profissional {
     @Column(nullable = false, unique = true)
     private String crm;
 
-    @Column(nullable = false)
-    private String especialidade;
-
     @Column(nullable = false, unique = true)
     private String email;
 
-    public Profissional() {
-    }
+    @Column(length = 1000)
+    private String fotoUrl;
 
-    public Profissional(Long id, String nome, String crm, String especialidade, String email) {
-        this.id = id;
-        this.nome = nome;
-        this.crm = crm;
-        this.especialidade = especialidade;
-        this.email = email;
-    }
+    @Column(length = 2000)
+    private String miniCurriculo;
 
-    public Long getId() {
-        return id;
-    }
+    @ManyToMany
+    @JoinTable(
+            name = "profissional_especialidade",
+            joinColumns = @JoinColumn(name = "profissional_id"),
+            inverseJoinColumns = @JoinColumn(name = "especialidade_id")
+    )
+    private Set<Especialidade> especialidades;
 
-    public String getNome() {
-        return nome;
-    }
-
-    public String getCrm() {
-        return crm;
-    }
-
-    public String getEspecialidade() {
-        return especialidade;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setNome(String nome) {
-        this.nome = nome;
-    }
-
-    public void setCrm(String crm) {
-        this.crm = crm;
-    }
-
-    public void setEspecialidade(String especialidade) {
-        this.especialidade = especialidade;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    @ManyToMany
+    @JoinTable(
+            name = "profissional_convenio",
+            joinColumns = @JoinColumn(name = "profissional_id"),
+            inverseJoinColumns = @JoinColumn(name = "convenio_id")
+    )
+    private Set<Convenio> convenios;
 }
