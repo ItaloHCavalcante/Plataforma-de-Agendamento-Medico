@@ -12,14 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/consulta") // Revertido para /consulta
+@RequestMapping("/consulta")
 public class ConsultaController {
 
     @Autowired
     private ConsultaService consultaService;
 
     @PostMapping("/solicitar")
-    @PreAuthorize("hasRole('CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')") // Descomentado
     public ResponseEntity<Consulta> solicitarAgendamento(@RequestBody @Valid SolicitarConsultaDTO dto) {
         Consulta agendamento = consultaService.solicitarAgendamento(dto);
         return ResponseEntity.ok(agendamento);
@@ -39,7 +39,7 @@ public class ConsultaController {
         return ResponseEntity.ok(consulta);
     }
 
-    @GetMapping("/todas") // Revertido para /todas
+    @GetMapping("/todas")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Consulta>> listarTodasConsultas() {
         List<Consulta> consultas = consultaService.listarTodasConsultas();
