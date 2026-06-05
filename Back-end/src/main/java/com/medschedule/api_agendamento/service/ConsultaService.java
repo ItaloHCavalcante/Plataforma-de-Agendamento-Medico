@@ -1,16 +1,21 @@
 package com.medschedule.api_agendamento.service;
 
+import com.medschedule.api_agendamento.dto.SolicitarConsultaDTO;
 import com.medschedule.api_agendamento.infra.exception.BusinessException;
 import com.medschedule.api_agendamento.infra.exception.ResourceNotFoundException;
-import com.medschedule.api_agendamento.model.Consulta;
-import com.medschedule.api_agendamento.model.StatusConsulta;
+import com.medschedule.api_agendamento.model.*;
 import com.medschedule.api_agendamento.repository.AgendaRepository;
 import com.medschedule.api_agendamento.repository.ConsultaRepository;
+import com.medschedule.api_agendamento.repository.ConvenioRepository;
+import com.medschedule.api_agendamento.repository.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ConsultaService {
@@ -22,23 +27,65 @@ public class ConsultaService {
     private AgendaRepository agendaRepository;
 
     @Autowired
+    private PacienteRepository pacienteRepository;
+
+    @Autowired
+    private ConvenioRepository convenioRepository;
+
+    @Autowired
     private NotificacaoService notificacaoService;
 
     @Transactional
-    public Consulta agendar(Consulta consulta) {
-        var agenda = agendaRepository.findById(consulta.getAgenda().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Horário não encontrado"));
+    public Consulta solicitarAgendamento(SolicitarConsultaDTO dto) {
+        Agenda agenda = agendaRepository.findById(dto.agendaId())
+                .orElseThrow(() -> new ResourceNotFoundException("Horário de agenda não encontrado."));
 
         if (!agenda.isDisponivel()) {
-            throw new BusinessException("Este horário já está ocupado!");
+            throw new BusinessException("Este horário já está ocupado ou não está disponível.");
         }
+
+        Optional<Paciente> pacienteExistente = pacienteRepository.findByCpf(dto.pacienteCpf());
+        Paciente paciente;
+        if (pacienteExistente.isPresent()) {
+            paciente = pacienteExistente.get();
+            paciente.setNome(dto.pacienteNome());
+            paciente.setEmail(dto.pacienteEmail());
+            paciente.setTelefone(dto.pacienteTelefone());
+            pacienteRepository.save(paciente);
+        } else {
+            paciente = new Paciente(null, dto.pacienteNome(), dto.pacienteCpf(), dto.pacienteEmail(), dto.pacienteTelefone());
+            pacienteRepository.save(paciente);
+        }
+
+        Convenio convenio = null;
+        if (dto.formaPagamento() == FormaPagamento.CONVENIO) {
+            if (dto.convenioId() == null) {
+                throw new BusinessException("Convênio é obrigatório para forma de pagamento CONVENIO.");
+            }
+            convenio = convenioRepository.findById(dto.convenioId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Convênio não encontrado."));
+        }
+
+        Consulta novaConsulta = new Consulta();
+        novaConsulta.setAgenda(agenda);
+        novaConsulta.setPaciente(paciente);
+        novaConsulta.setProfissional(agenda.getProfissional()); // Preenchendo o profissional
+        novaConsulta.setDataHora(LocalDateTime.of(agenda.getData(), LocalTime.parse(agenda.getHorario()))); // Preenchendo a data e hora
+        novaConsulta.setFormaPagamento(dto.formaPagamento());
+        novaConsulta.setConvenio(convenio);
+        novaConsulta.setTipoConsulta(dto.tipoConsulta());
+        novaConsulta.setStatus(StatusConsulta.EM_ANDAMENTO);
+        novaConsulta.setDataSolicitacao(LocalDateTime.now());
+
+        Consulta consultaSalva = consultaRepository.save(novaConsulta);
 
         agenda.setDisponivel(false);
         agendaRepository.save(agenda);
-        
-        consulta.setStatus(StatusConsulta.EM_ANDAMENTO);
 
-        return consultaRepository.save(consulta);
+        String mensagemAdmin = "Nova solicitação de consulta de " + paciente.getNome() + " para " + agenda.getProfissional().getNome() + ".";
+        notificacaoService.enviarNotificacao(consultaSalva, mensagemAdmin, "/topic/solicitacoes");
+
+        return consultaSalva;
     }
     
     @Transactional
@@ -54,8 +101,7 @@ public class ConsultaService {
         Consulta consultaConfirmada = consultaRepository.save(consulta);
 
         String mensagem = "Sua consulta para o dia " + consulta.getDataHora().toLocalDate() + " às " + consulta.getDataHora().toLocalTime() + " foi confirmada.";
-        String destino = "/topic/paciente/" + consultaConfirmada.getPaciente().getId();
-        notificacaoService.enviarNotificacao(consultaConfirmada, mensagem, destino);
+        notificacaoService.enviarNotificacao(consultaConfirmada, mensagem, "/user/" + consultaConfirmada.getPaciente().getId() + "/queue/notificacoes");
 
         return consultaConfirmada;
     }
@@ -64,6 +110,10 @@ public class ConsultaService {
     public Consulta cancelarConsulta(Long consultaId) {
         Consulta consulta = consultaRepository.findById(consultaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada!"));
+
+        if (consulta.getStatus() == StatusConsulta.AGENDADA) {
+            throw new BusinessException("Consultas já agendadas não podem ser canceladas diretamente por aqui.");
+        }
 
         consulta.setStatus(StatusConsulta.CANCELADA);
         
@@ -74,8 +124,7 @@ public class ConsultaService {
         Consulta consultaCancelada = consultaRepository.save(consulta);
 
         String mensagem = "Sua consulta para o dia " + consulta.getDataHora().toLocalDate() + " foi cancelada.";
-        String destino = "/topic/paciente/" + consultaCancelada.getPaciente().getId();
-        notificacaoService.enviarNotificacao(consultaCancelada, mensagem, destino);
+        notificacaoService.enviarNotificacao(consultaCancelada, mensagem, "/user/" + consultaCancelada.getPaciente().getId() + "/queue/notificacoes");
 
         return consultaCancelada;
     }

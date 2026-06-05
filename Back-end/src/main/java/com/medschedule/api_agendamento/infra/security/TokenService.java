@@ -24,6 +24,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("API MedSchedule")
                     .withSubject(usuario.getLogin())
+                    .withClaim("role", usuario.getRole().name()) // Adicionando a role como um claim
                     .withExpiresAt(genExpirationDate())
                     .sign(algorithm);
         } catch (JWTCreationException exception) {

@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class ProfissionalController {
 
     @PostMapping
     @Transactional
+    @PreAuthorize("hasRole('ADMIN')") // Apenas ADMIN pode criar profissional
     public ResponseEntity<Profissional> cadastrar(@RequestBody @Valid Profissional profissional) {
         var salvo = repository.save(profissional);
         return ResponseEntity.status(HttpStatus.CREATED).body(salvo);
@@ -31,5 +33,16 @@ public class ProfissionalController {
             return ResponseEntity.ok(repository.findByEspecialidadeNome(especialidade));
         }
         return ResponseEntity.ok(repository.findAll());
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    @PreAuthorize("hasRole('ADMIN')") // Apenas ADMIN pode deletar profissional
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
+        if (!repository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

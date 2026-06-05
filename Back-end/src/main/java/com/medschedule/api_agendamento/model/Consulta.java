@@ -20,33 +20,39 @@ public class Consulta {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "paciente_id", nullable = false)
-    private Paciente paciente;
-
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "profissional_id", nullable = false)
-    private Profissional profissional;
-
-    @ManyToOne(optional = false)
+    @ManyToOne
     @JoinColumn(name = "agenda_id", nullable = false)
     private Agenda agenda;
 
+    @ManyToOne
+    @JoinColumn(name = "paciente_id", nullable = false)
+    private Paciente paciente;
+
+    @ManyToOne
+    @JoinColumn(name = "profissional_id") // Campo que estava faltando
+    private Profissional profissional;
+
     @Column(nullable = false)
-    private LocalDateTime dataHora;
+    private LocalDateTime dataHora; // Campo que estava faltando
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private StatusConsulta status;
+    private FormaPagamento formaPagamento;
+
+    @ManyToOne
+    @JoinColumn(name = "convenio_id")
+    private Convenio convenio;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TipoConsulta tipoConsulta;
 
-    @Column(length = 500)
-    private String motivo;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FormaPagamento formaPagamento;
+    private StatusConsulta status;
+
+    @Column(nullable = false)
+    private LocalDateTime dataSolicitacao;
+
+    private String observacoes;
 }
