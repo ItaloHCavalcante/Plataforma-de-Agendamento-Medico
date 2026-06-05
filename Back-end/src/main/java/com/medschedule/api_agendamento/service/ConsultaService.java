@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -69,8 +68,9 @@ public class ConsultaService {
         Consulta novaConsulta = new Consulta();
         novaConsulta.setAgenda(agenda);
         novaConsulta.setPaciente(paciente);
-        novaConsulta.setProfissional(agenda.getProfissional()); // Preenchendo o profissional
-        novaConsulta.setDataHora(LocalDateTime.of(agenda.getData(), LocalTime.parse(agenda.getHorario()))); // Preenchendo a data e hora
+        novaConsulta.setProfissional(agenda.getProfissional());
+        // Correção: agenda.getHorario() já é um LocalTime, não precisa de parse.
+        novaConsulta.setDataHora(LocalDateTime.of(agenda.getData(), agenda.getHorario()));
         novaConsulta.setFormaPagamento(dto.formaPagamento());
         novaConsulta.setConvenio(convenio);
         novaConsulta.setTipoConsulta(dto.tipoConsulta());
