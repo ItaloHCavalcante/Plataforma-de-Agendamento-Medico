@@ -5,12 +5,10 @@ import com.medschedule.api_agendamento.model.TipoConsulta;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-// Este DTO representa todos os dados que o front-end enviará ao solicitar uma consulta.
 public record SolicitarConsultaDTO(
         @NotNull
         Long agendaId,
         
-        // Dados do Paciente
         @NotBlank
         String pacienteNome,
         @NotBlank
@@ -23,7 +21,7 @@ public record SolicitarConsultaDTO(
         @NotNull
         FormaPagamento formaPagamento,
         
-        Long convenioId, // Opcional, apenas se formaPagamento for CONVENIO
+        Long convenioId,
         
         @NotNull
         TipoConsulta tipoConsulta

@@ -39,7 +39,7 @@ export default function GerenciarAgendas() {
     e.preventDefault();
     setMessage('');
     setError('');
-
+    
     try {
       await criarAgenda({
         profissional: { id: Number(form.profissionalId) },
@@ -86,7 +86,7 @@ export default function GerenciarAgendas() {
               Horário
               <input type="time" name="horario" value={form.horario} onChange={handleChange} required />
             </label>
-
+            
             {message && <div className="alert success">{message}</div>}
             {error && <div className="alert error">{error}</div>}
 

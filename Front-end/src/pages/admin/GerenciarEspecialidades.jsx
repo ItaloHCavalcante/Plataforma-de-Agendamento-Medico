@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { listarEspecialidades, criarEspecialidade } from '../../services/especialidadeService';
 // Importação de api para usar chamadas diretas quando não há serviço específico
-import { api } from '../../services/api';
+import { api } from '../../services/api'; 
 import EmptyState from '../../components/EmptyState';
 
 export default function GerenciarEspecialidades() {
@@ -26,7 +26,7 @@ export default function GerenciarEspecialidades() {
   const handleCriar = async (e) => {
     e.preventDefault();
     if (!novaEspecialidade.trim()) return;
-
+    
     setLoading(true);
     try {
       await criarEspecialidade({ nome: novaEspecialidade });
@@ -41,7 +41,7 @@ export default function GerenciarEspecialidades() {
 
   const handleDeletar = async (id) => {
     if (!window.confirm('Tem certeza que deseja deletar esta especialidade?')) return;
-
+    
     try {
       // O serviço de deletar não existe em especialidadeService, usando api direto
       await api.delete(`/especialidades/${id}`);
@@ -103,8 +103,8 @@ export default function GerenciarEspecialidades() {
                       <td>{esp.id}</td>
                       <td>{esp.nome}</td>
                       <td>
-                        <button
-                          className="button danger"
+                        <button 
+                          className="button danger" 
                           onClick={() => handleDeletar(esp.id)}
                           style={{ padding: '4px 8px', fontSize: '0.8rem', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
                         >

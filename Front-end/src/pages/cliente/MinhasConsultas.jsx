@@ -1,39 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { listarConsultasPorPaciente } from '../../services/consultaService';
-import { useAuth } from '../../context/AuthContext';
+import { listarMinhasConsultas } from '../../services/consultaService'; // Usando a nova função
 import EmptyState from '../../components/EmptyState';
 
 export default function MinhasConsultas() {
-  const { user } = useAuth();
   const [consultas, setConsultas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (user?.id) {
-      async function carregarConsultas() {
-        try {
-          // Este endpoint precisa existir e retornar as consultas do usuário logado.
-          // O ideal é que o back-end use o token para identificar o usuário,
-          // em vez de depender de um ID na URL que pode ser inseguro.
-          // Ex: GET /api/consultas/minhas-consultas
-          const data = await listarConsultasPorPaciente(user.id); // Supondo que user.id é o ID do PACIENTE
-          setConsultas(data);
-        } catch (err) {
-          setError('Não foi possível carregar suas consultas. O endpoint pode não estar pronto.');
-        } finally {
-          setLoading(false);
-        }
+    async function carregarConsultas() {
+      try {
+        const data = await listarMinhasConsultas(); // Chamando a nova função
+        setConsultas(data);
+      } catch (err) {
+        setError('Não foi possível carregar suas consultas.');
+      } finally {
+        setLoading(false);
       }
-      carregarConsultas();
     }
-  }, [user]);
+    carregarConsultas();
+  }, []);
 
   const getStatusClass = (status) => {
     switch (status) {
-      case 'CONFIRMADA': return 'status-confirmed';
+      case 'AGENDADA': return 'status-confirmed';
       case 'CANCELADA': return 'status-cancelled';
-      case 'PENDENTE': return 'status-pending';
+      case 'EM_ANDAMENTO': return 'status-pending';
+      case 'FINALIZADA': return 'status-finalized';
       default: return '';
     }
   };
@@ -50,9 +43,9 @@ export default function MinhasConsultas() {
     <div>
       <div className="page-title">
         <h2>Meus Agendamentos</h2>
-        <p>Acompanhe o status e o histórico de suas consultas.</p>
+        <p>Acompanhe o status das suas consultas.</p>
       </div>
-
+      
       {consultas.length === 0 ? (
         <EmptyState message="Você ainda não tem nenhuma consulta agendada." />
       ) : (
@@ -70,9 +63,9 @@ export default function MinhasConsultas() {
               <tbody>
                 {consultas.map(consulta => (
                   <tr key={consulta.id}>
-                    <td>{consulta.agenda?.profissional?.nome || 'N/A'}</td>
-                    <td>{consulta.agenda?.profissional?.especialidade?.nome || 'N/A'}</td>
-                    <td>{new Date(consulta.agenda?.data).toLocaleString()}</td>
+                    <td>{consulta.profissional?.nome || 'N/A'}</td>
+                    <td>{consulta.profissional?.especialidades?.map(e => e.nome).join(', ') || 'N/A'}</td>
+                    <td>{new Date(consulta.dataHora).toLocaleString()}</td>
                     <td>
                       <span className={`status-badge ${getStatusClass(consulta.status)}`}>
                         {consulta.status}

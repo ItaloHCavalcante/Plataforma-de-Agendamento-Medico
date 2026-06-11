@@ -105,7 +105,6 @@ export default function NovaConsulta() {
     setError('');
 
     try {
-      // Monta o objeto final para a API
       const dadosParaApi = {
         agendaId: Number(formData.agendaId),
         pacienteNome: formData.pacienteNome,
@@ -130,81 +129,89 @@ export default function NovaConsulta() {
   };
 
   return (
-    <div>
+    <div className="nova-consulta-container">
       <div className="page-title">
         <h2>Agendar Nova Consulta</h2>
         <p>Siga os passos para encontrar o melhor horário para você.</p>
       </div>
 
       <div className="panel">
-        <h3>Passo 1: Selecione a Especialidade</h3>
-        <select
-          value={formData.especialidadeId}
-          onChange={(e) => handleEspecialidadeChange(e.target.value)}
-          disabled={loading}
-        >
-          <option value="">-- Escolha uma especialidade --</option>
-          {especialidades.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
-        </select>
+        <div className="form-stack">
+          <h3>Passo 1: Selecione a Especialidade</h3>
+          <select
+            value={formData.especialidadeId}
+            onChange={(e) => handleEspecialidadeChange(e.target.value)}
+            disabled={loading}
+          >
+            <option value="">-- Escolha uma especialidade --</option>
+            {especialidades.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}
+          </select>
+        </div>
       </div>
 
       {step >= 2 && formData.especialidadeId && (
         <div className="panel">
-          <h3>Passo 2: Selecione o Profissional</h3>
-          <select
-            value={formData.profissionalId}
-            onChange={(e) => handleProfissionalChange(e.target.value)}
-            disabled={loading || profissionais.length === 0}
-          >
-            <option value="">-- Escolha um profissional --</option>
-            {profissionais.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-          </select>
+          <div className="form-stack">
+            <h3>Passo 2: Selecione o Profissional</h3>
+            <select
+              value={formData.profissionalId}
+              onChange={(e) => handleProfissionalChange(e.target.value)}
+              disabled={loading || profissionais.length === 0}
+            >
+              <option value="">-- Escolha um profissional --</option>
+              {profissionais.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
+            </select>
+          </div>
         </div>
       )}
 
       {step >= 3 && formData.profissionalId && (
         <div className="panel">
-          <h3>Passo 3: Selecione o Horário</h3>
-          <select
-            value={formData.agendaId}
-            onChange={(e) => handleAgendaChange(e.target.value)}
-            disabled={loading || agendas.length === 0}
-          >
-            <option value="">-- Escolha um horário --</option>
-            {agendas.map(a => <option key={a.id} value={a.id}>{new Date(a.data).toLocaleDateString()} às {a.horario}</option>)}
-          </select>
+          <div className="form-stack">
+            <h3>Passo 3: Selecione o Horário</h3>
+            <select
+              value={formData.agendaId}
+              onChange={(e) => handleAgendaChange(e.target.value)}
+              disabled={loading || agendas.length === 0}
+            >
+              <option value="">-- Escolha um horário --</option>
+              {agendas.map(a => <option key={a.id} value={a.id}>{new Date(a.data).toLocaleDateString()} às {a.horario}</option>)}
+            </select>
+          </div>
         </div>
       )}
 
       {step >= 4 && formData.agendaId && (
         <div className="panel">
-          <h3>Passo 4: Confirme seus Dados</h3>
-          <form onSubmit={handleSubmit} className="form-stack">
-            <h4>Informações do Paciente</h4>
-            <input name="pacienteNome" value={formData.pacienteNome} onChange={handleFormChange} placeholder="Nome Completo" required />
-            <input name="pacienteCpf" value={formData.pacienteCpf} onChange={handleFormChange} placeholder="CPF" required />
-            <input name="pacienteEmail" value={formData.pacienteEmail} onChange={handleFormChange} placeholder="E-mail" required />
-            <input name="pacienteTelefone" value={formData.pacienteTelefone} onChange={handleFormChange} placeholder="Telefone" required />
-
-            <h4>Detalhes da Consulta</h4>
-            <select name="tipoConsulta" value={formData.tipoConsulta} onChange={handleFormChange}>
-              {TIPOS_CONSULTA.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select name="formaPagamento" value={formData.formaPagamento} onChange={handleFormChange}>
-              {FORMAS_PAGAMENTO.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-            {formData.formaPagamento === 'CONVENIO' && (
-              <select name="convenioId" value={formData.convenioId} onChange={handleFormChange} required>
-                <option value="">-- Selecione o Convênio --</option>
-                {convenios.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+          <div className="form-stack">
+            <h3>Passo 4: Confirme seus Dados</h3>
+            <form onSubmit={handleSubmit} className="form-stack">
+              <h4>Informações do Paciente</h4>
+              <input name="pacienteNome" value={formData.pacienteNome} onChange={handleFormChange} placeholder="Nome Completo" required />
+              <input name="pacienteCpf" value={formData.pacienteCpf} onChange={handleFormChange} placeholder="CPF" required />
+              <input name="pacienteEmail" value={formData.pacienteEmail} onChange={handleFormChange} placeholder="E-mail" required />
+              <input name="pacienteTelefone" value={formData.pacienteTelefone} onChange={handleFormChange} placeholder="Telefone" required />
+              
+              <h4>Detalhes da Consulta</h4>
+              <select name="tipoConsulta" value={formData.tipoConsulta} onChange={handleFormChange}>
+                {TIPOS_CONSULTA.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
-            )}
+              <select name="formaPagamento" value={formData.formaPagamento} onChange={handleFormChange}>
+                {FORMAS_PAGAMENTO.map(f => <option key={f} value={f}>{f}</option>)}
+              </select>
+              {formData.formaPagamento === 'CONVENIO' && (
+                <select name="convenioId" value={formData.convenioId} onChange={handleFormChange} required>
+                  <option value="">-- Selecione o Convênio --</option>
+                  {convenios.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                </select>
+              )}
 
-            {error && <div className="alert error">{error}</div>}
-            <button type="submit" className="primary-button" disabled={loading}>
-              {loading ? 'Enviando Solicitação...' : 'Solicitar Agendamento'}
-            </button>
-          </form>
+              {error && <div className="alert error">{error}</div>}
+              <button type="submit" className="primary-button" disabled={loading}>
+                {loading ? 'Enviando Solicitação...' : 'Solicitar Agendamento'}
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

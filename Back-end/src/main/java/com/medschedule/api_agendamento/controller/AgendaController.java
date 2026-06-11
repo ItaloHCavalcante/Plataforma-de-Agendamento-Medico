@@ -23,7 +23,8 @@ public class AgendaController {
 
     @GetMapping("/disponiveis")
     public List<Agenda> listarDisponiveis(){
-        return repository.findByDisponivelTrue();
+        // Corrigido para usar o método correto
+        return repository.findByDisponivel(true);
     }
 
 }

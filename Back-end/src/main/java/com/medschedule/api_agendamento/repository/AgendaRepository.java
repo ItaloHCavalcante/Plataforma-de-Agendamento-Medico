@@ -7,5 +7,6 @@ import java.util.List;
 
 @Repository
 public interface AgendaRepository extends JpaRepository<Agenda, Long> {
-    List<Agenda> findByDisponivelTrue();
+    // Corrigindo o nome do método para corresponder ao uso no AgendaService
+    List<Agenda> findByDisponivel(boolean disponivel);
 }
