@@ -19,7 +19,7 @@ public class ConsultaController {
     private ConsultaService consultaService;
 
     @PostMapping("/solicitar")
-    @PreAuthorize("hasRole('CLIENTE')") // Descomentado
+    @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<Consulta> solicitarAgendamento(@RequestBody @Valid SolicitarConsultaDTO dto) {
         Consulta agendamento = consultaService.solicitarAgendamento(dto);
         return ResponseEntity.ok(agendamento);
@@ -39,6 +39,13 @@ public class ConsultaController {
         return ResponseEntity.ok(consulta);
     }
 
+    @PutMapping("/{id}/finalizar")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Consulta> finalizarConsulta(@PathVariable Long id) {
+        Consulta consulta = consultaService.finalizarConsulta(id);
+        return ResponseEntity.ok(consulta);
+    }
+
     @GetMapping("/todas")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Consulta>> listarTodasConsultas() {
@@ -50,6 +57,13 @@ public class ConsultaController {
     @PreAuthorize("hasRole('CLIENTE')")
     public ResponseEntity<List<Consulta>> listarConsultasPorPaciente(@PathVariable Long pacienteId) {
         List<Consulta> consultas = consultaService.listarConsultasPorPaciente(pacienteId);
+        return ResponseEntity.ok(consultas);
+    }
+
+    @GetMapping("/minhas-consultas")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<Consulta>> listarMinhasConsultas() {
+        List<Consulta> consultas = consultaService.listarMinhasConsultas();
         return ResponseEntity.ok(consultas);
     }
 }

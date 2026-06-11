@@ -22,6 +22,10 @@ public class Paciente {
     @Column(nullable = false)
     private String telefone;
 
+    @OneToOne
+    @JoinColumn(name = "usuario_id")
+    private Usuario usuario;
+
     public Paciente() {
     }
 
@@ -53,6 +57,10 @@ public class Paciente {
         return telefone;
     }
 
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
     public void setId(Long id) {
         this.id = id;
     }
@@ -71,5 +79,9 @@ public class Paciente {
 
     public void setTelefone(String telefone) {
         this.telefone = telefone;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 }
