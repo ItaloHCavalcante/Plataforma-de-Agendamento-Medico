@@ -4,15 +4,15 @@ import com.medschedule.api_agendamento.dto.SolicitarConsultaDTO;
 import com.medschedule.api_agendamento.infra.exception.BusinessException;
 import com.medschedule.api_agendamento.infra.exception.ResourceNotFoundException;
 import com.medschedule.api_agendamento.model.*;
-import com.medschedule.api_agendamento.repository.*;
+import com.medschedule.api_agendamento.repository.AgendaRepository;
+import com.medschedule.api_agendamento.repository.ConsultaRepository;
+import com.medschedule.api_agendamento.repository.ConvenioRepository;
+import com.medschedule.api_agendamento.repository.PacienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,9 +32,6 @@ public class ConsultaService {
     private ConvenioRepository convenioRepository;
 
     @Autowired
-    private UsuarioRepository usuarioRepository; // Adicionando o repositório de usuários
-
-    @Autowired
     private NotificacaoService notificacaoService;
 
     @Transactional
@@ -46,32 +43,18 @@ public class ConsultaService {
             throw new BusinessException("Este horário já está ocupado ou não está disponível.");
         }
 
-        // Obter o usuário logado
-        String login = SecurityContextHolder.getContext().getAuthentication().getName();
-        Usuario usuario = (Usuario) usuarioRepository.findByLogin(login);
-
-        Optional<Paciente> pacientePorCpf = pacienteRepository.findByCpf(dto.pacienteCpf());
-        Optional<Paciente> pacientePorEmail = pacienteRepository.findByEmail(dto.pacienteEmail());
-
+        Optional<Paciente> pacienteExistente = pacienteRepository.findByCpf(dto.pacienteCpf());
         Paciente paciente;
-        if (pacientePorCpf.isPresent()) {
-            paciente = pacientePorCpf.get();
+        if (pacienteExistente.isPresent()) {
+            paciente = pacienteExistente.get();
             paciente.setNome(dto.pacienteNome());
             paciente.setEmail(dto.pacienteEmail());
             paciente.setTelefone(dto.pacienteTelefone());
-            paciente.setUsuario(usuario); // Associando o usuário
-        } else if (pacientePorEmail.isPresent()) {
-            paciente = pacientePorEmail.get();
-            paciente.setNome(dto.pacienteNome());
-            paciente.setCpf(dto.pacienteCpf());
-            paciente.setTelefone(dto.pacienteTelefone());
-            paciente.setUsuario(usuario); // Associando o usuário
+            pacienteRepository.save(paciente);
         } else {
             paciente = new Paciente(null, dto.pacienteNome(), dto.pacienteCpf(), dto.pacienteEmail(), dto.pacienteTelefone());
-            paciente.setUsuario(usuario); // Associando o usuário
+            pacienteRepository.save(paciente);
         }
-        pacienteRepository.save(paciente);
-
 
         Convenio convenio = null;
         if (dto.formaPagamento() == FormaPagamento.CONVENIO) {
@@ -86,6 +69,7 @@ public class ConsultaService {
         novaConsulta.setAgenda(agenda);
         novaConsulta.setPaciente(paciente);
         novaConsulta.setProfissional(agenda.getProfissional());
+        // Correção: agenda.getHorario() já é um LocalTime, não precisa de parse.
         novaConsulta.setDataHora(LocalDateTime.of(agenda.getData(), agenda.getHorario()));
         novaConsulta.setFormaPagamento(dto.formaPagamento());
         novaConsulta.setConvenio(convenio);
@@ -99,7 +83,7 @@ public class ConsultaService {
         agendaRepository.save(agenda);
 
         String mensagemAdmin = "Nova solicitação de consulta de " + paciente.getNome() + " para " + agenda.getProfissional().getNome() + ".";
-        notificacaoService.enviarNotificacao(consultaSalva.getId(), mensagemAdmin, "/topic/solicitacoes");
+        notificacaoService.enviarNotificacao(consultaSalva, mensagemAdmin, "/topic/solicitacoes");
 
         return consultaSalva;
     }
@@ -117,7 +101,7 @@ public class ConsultaService {
         Consulta consultaConfirmada = consultaRepository.save(consulta);
 
         String mensagem = "Sua consulta para o dia " + consulta.getDataHora().toLocalDate() + " às " + consulta.getDataHora().toLocalTime() + " foi confirmada.";
-        notificacaoService.enviarNotificacao(consultaConfirmada.getId(), mensagem, "/user/" + consultaConfirmada.getPaciente().getUsuario().getId() + "/queue/notificacoes");
+        notificacaoService.enviarNotificacao(consultaConfirmada, mensagem, "/user/" + consultaConfirmada.getPaciente().getId() + "/queue/notificacoes");
 
         return consultaConfirmada;
     }
@@ -127,37 +111,22 @@ public class ConsultaService {
         Consulta consulta = consultaRepository.findById(consultaId)
                 .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada!"));
 
-        if (consulta.getStatus() == StatusConsulta.FINALIZADA) {
-            throw new BusinessException("Consultas finalizadas não podem ser canceladas.");
+        if (consulta.getStatus() == StatusConsulta.AGENDADA) {
+            throw new BusinessException("Consultas já agendadas não podem ser canceladas diretamente por aqui.");
         }
 
         consulta.setStatus(StatusConsulta.CANCELADA);
         
-        if (consulta.getStatus() != StatusConsulta.FINALIZADA) {
-            var agenda = consulta.getAgenda();
-            agenda.setDisponivel(true);
-            agendaRepository.save(agenda);
-        }
+        var agenda = consulta.getAgenda();
+        agenda.setDisponivel(true);
+        agendaRepository.save(agenda);
 
         Consulta consultaCancelada = consultaRepository.save(consulta);
 
         String mensagem = "Sua consulta para o dia " + consulta.getDataHora().toLocalDate() + " foi cancelada.";
-        notificacaoService.enviarNotificacao(consultaCancelada.getId(), mensagem, "/user/" + consultaCancelada.getPaciente().getUsuario().getId() + "/queue/notificacoes");
+        notificacaoService.enviarNotificacao(consultaCancelada, mensagem, "/user/" + consultaCancelada.getPaciente().getId() + "/queue/notificacoes");
 
         return consultaCancelada;
-    }
-
-    @Transactional
-    public Consulta finalizarConsulta(Long consultaId) {
-        Consulta consulta = consultaRepository.findById(consultaId)
-                .orElseThrow(() -> new ResourceNotFoundException("Consulta não encontrada!"));
-
-        if (consulta.getStatus() != StatusConsulta.AGENDADA) {
-            throw new BusinessException("Apenas consultas agendadas podem ser finalizadas.");
-        }
-
-        consulta.setStatus(StatusConsulta.FINALIZADA);
-        return consultaRepository.save(consulta);
     }
 
     public List<Consulta> listarTodasConsultas() {
@@ -166,16 +135,5 @@ public class ConsultaService {
 
     public List<Consulta> listarConsultasPorPaciente(Long pacienteId) {
         return consultaRepository.findByPacienteId(pacienteId);
-    }
-
-    public List<Consulta> listarMinhasConsultas() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String login;
-        if (principal instanceof UserDetails) {
-            login = ((UserDetails)principal).getUsername();
-        } else {
-            login = principal.toString();
-        }
-        return consultaRepository.findByPacienteUsuarioLogin(login);
     }
 }

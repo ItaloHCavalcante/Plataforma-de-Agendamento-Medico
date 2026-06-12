@@ -59,4 +59,11 @@ public class ConsultaController {
         List<Consulta> consultas = consultaService.listarMinhasConsultas();
         return ResponseEntity.ok(consultas);
     }
+
+    @GetMapping("/minhas-consultas")
+    @PreAuthorize("hasRole('CLIENTE')")
+    public ResponseEntity<List<Consulta>> listarMinhasConsultas() {
+        List<Consulta> consultas = consultaService.listarMinhasConsultas();
+        return ResponseEntity.ok(consultas);
+    }
 }
